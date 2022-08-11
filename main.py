@@ -8,6 +8,7 @@ import Encryption
 app = Flask(__name__)
 key = b'272653^&W%&^%&$%^&%&$%(@*&(@*^'
 filename = ''
+action = ''
 def print_hi(name):
     # Use a breakpoint in the code line below to debug your script.
     print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
@@ -22,7 +23,8 @@ def hom():
 @app.route('/uploader', methods=["POST"])
 def upload():
     f = request.files['file']
-    print(f.filename)
+    global action
+    action = request.form.get('action')
     global filename
     filename = f.filename
     f.save(filename)
@@ -30,9 +32,13 @@ def upload():
 
 @app.route('/download')
 def download_file():
-    Encryption.encrypt(filename)
-
-    return send_file(filename+".enc", as_attachment=True)
+    global filename
+    if action=='encrypt':
+        Encryption.encrypt(filename)
+        return send_file(filename+".enc", as_attachment=True)
+    Encryption.decrypt(filename)
+    file_name = filename.removesuffix(".enc")
+    return send_file(file_name,as_attachment=True)
 
 
 # Press the green button in the gutter to run the script.
